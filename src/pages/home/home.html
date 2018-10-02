@@ -1,14 +1,40 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      Ionic Blank
+      Ionic In App Purchase
     </ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+  <ion-row text-center>
+    <ion-col>Crystals:<br> <b>{{ crystalCount }}</b></ion-col>
+    <ion-col>Special Mode: <b>{{ specialGame }}</b></ion-col>
+    <ion-col>Monthly Subscription: <b>{{ monthlySub }}</b></ion-col>
+  </ion-row>
+
+  <ion-card *ngFor="let product of products">
+    <ion-card-header>{{ product.title }}</ion-card-header>
+    <ion-card-content>
+      {{ product.description }}
+    </ion-card-content>
+    <ion-row>
+      <ion-col>
+        <button ion-button block (click)="buy(product.productId)">
+          Buy now - {{ product.price }}
+        </button>
+      </ion-col>
+    </ion-row>
+  </ion-card>
+
+  <button ion-button full icon-left color="secondary" (click)="restore()">
+    <ion-icon name="refresh"></ion-icon>Restore
+  </button>
+
+  <ion-card *ngFor="let prev of previousPurchases">
+    <ion-card-header>Purchased {{ prev.date | date:'short' }}</ion-card-header>
+    <ion-card-content>
+      {{ prev.productId }}
+    </ion-card-content>
+  </ion-card>
 </ion-content>

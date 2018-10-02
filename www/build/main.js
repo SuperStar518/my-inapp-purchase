@@ -41,6 +41,7 @@ webpackEmptyAsyncContext.id = 149;
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HomePage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_in_app_purchase__ = __webpack_require__(268);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -52,17 +53,69 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+
+// insert your own Product IDs
+var MONTHLYLVL_KEY = 'com.devdactic.crossingnumbers.monthlylevels';
+var CRYSTALS_KEY = 'com.devdactic.crossingnumbers.100crystal';
+var GAMEMODE_KEY = 'com.devdactic.crossingnumbers.specialgamemode';
 var HomePage = /** @class */ (function () {
-    function HomePage(navCtrl) {
+    function HomePage(navCtrl, iap, plt) {
+        var _this = this;
         this.navCtrl = navCtrl;
+        this.iap = iap;
+        this.plt = plt;
+        this.products = [];
+        this.previousPurchases = [];
+        this.crystalCount = 0;
+        this.specialGame = false;
+        this.monthlySub = false;
+        this.plt.ready().then(function () {
+            _this.iap.getProducts([MONTHLYLVL_KEY, CRYSTALS_KEY, GAMEMODE_KEY])
+                .then(function (products) {
+                _this.products = products;
+            })
+                .catch(function (err) {
+                console.log(err);
+            });
+        });
     }
+    HomePage.prototype.buy = function (product) {
+        var _this = this;
+        this.iap.buy(product).then(function (data) {
+            _this.enableItems(product);
+        });
+    };
+    HomePage.prototype.restore = function () {
+        var _this = this;
+        this.iap.restorePurchases().then(function (purchases) {
+            _this.previousPurchases = purchases;
+            // unlock the features of the purchases
+            for (var _i = 0, _a = _this.previousPurchases; _i < _a.length; _i++) {
+                var prev = _a[_i];
+                _this.enableItems(prev.productId);
+            }
+        });
+    };
+    HomePage.prototype.enableItems = function (id) {
+        // normally store these settings/purchases inside your app or server
+        if (id === CRYSTALS_KEY) {
+            this.crystalCount += 100;
+        }
+        else if (id === GAMEMODE_KEY) {
+            this.specialGame = true;
+        }
+        else if (id === MONTHLYLVL_KEY) {
+            this.monthlySub = true;
+        }
+    };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"/Users/robjsmac/Documents/rob_train/ionic/my-inapp-purchase/src/pages/home/home.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Ionic Blank\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  The world is your oyster.\n  <p>\n    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.\n  </p>\n</ion-content>\n'/*ion-inline-end:"/Users/robjsmac/Documents/rob_train/ionic/my-inapp-purchase/src/pages/home/home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"/Users/robjsmac/Documents/rob_train/ionic/my-inapp-purchase/src/pages/home/home.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Ionic In App Purchase\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <ion-row text-center>\n    <ion-col>Crystals:<br> <b>{{ crystalCount }}</b></ion-col>\n    <ion-col>Special Mode: <b>{{ specialGame }}</b></ion-col>\n    <ion-col>Monthly Subscription: <b>{{ monthlySub }}</b></ion-col>\n  </ion-row>\n\n  <ion-card *ngFor="let product of products">\n    <ion-card-header>{{ product.title }}</ion-card-header>\n    <ion-card-content>\n      {{ product.description }}\n    </ion-card-content>\n    <ion-row>\n      <ion-col>\n        <button ion-button block (click)="buy(product.productId)">\n          Buy now - {{ product.price }}\n        </button>\n      </ion-col>\n    </ion-row>\n  </ion-card>\n\n  <button ion-button full icon-left color="secondary" (click)="restore()">\n    <ion-icon name="refresh"></ion-icon>Restore\n  </button>\n\n  <ion-card *ngFor="let prev of previousPurchases">\n    <ion-card-header>Purchased {{ prev.date | date:\'short\' }}</ion-card-header>\n    <ion-card-content>\n      {{ prev.productId }}\n    </ion-card-content>\n  </ion-card>\n</ion-content>'/*ion-inline-end:"/Users/robjsmac/Documents/rob_train/ionic/my-inapp-purchase/src/pages/home/home.html"*/
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__ionic_native_in_app_purchase__["a" /* InAppPurchase */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__ionic_native_in_app_purchase__["a" /* InAppPurchase */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */]) === "function" && _c || Object])
     ], HomePage);
     return HomePage;
+    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=home.js.map
@@ -95,12 +148,14 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_status_bar__ = __webpack_require__(192);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__app_component__ = __webpack_require__(267);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pages_home_home__ = __webpack_require__(193);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ionic_native_in_app_purchase__ = __webpack_require__(268);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -131,7 +186,8 @@ var AppModule = /** @class */ (function () {
             providers: [
                 __WEBPACK_IMPORTED_MODULE_4__ionic_native_status_bar__["a" /* StatusBar */],
                 __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */],
-                { provide: __WEBPACK_IMPORTED_MODULE_1__angular_core__["u" /* ErrorHandler */], useClass: __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["b" /* IonicErrorHandler */] }
+                { provide: __WEBPACK_IMPORTED_MODULE_1__angular_core__["u" /* ErrorHandler */], useClass: __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["b" /* IonicErrorHandler */] },
+                __WEBPACK_IMPORTED_MODULE_7__ionic_native_in_app_purchase__["a" /* InAppPurchase */]
             ]
         })
     ], AppModule);
