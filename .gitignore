@@ -1,1 +1,9 @@
 node_modules
+
+.vscode
+.sourcemaps
+
+plugins
+platforms
+
+.DS_Store
